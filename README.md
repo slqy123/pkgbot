@@ -1,25 +1,44 @@
 # pkgbot
 
-An automatic Arch Linux package repository builder that runs entirely on GitHub
-Actions. It checks upstream versions, updates PKGBUILDs, builds packages in a
-clean Arch container, signs them, and publishes a `pacman` repository to the
-`gh-pages` branch.
+An Arch Linux package repository built and published automatically by GitHub
+Actions.
 
 ## Usage
 
-Users add the published repository to `/etc/pacman.conf`:
+Add the repository to `/etc/pacman.conf`:
 
 ```
-[<repo-name>]
-Server = https://github.com/<owner>/<repo>/releases/download/<tag>
-Server = https://<owner>.github.io/<repo>/$arch
+[pkgbot]
+Server = https://github.com/slqy123/pkgbot/releases/download/packages
+Server = https://slqy123.github.io/pkgbot/$arch
 ```
 
-Packages are uploaded as assets of a single fixed-tag GitHub Release
-(`<tag>`, default `packages`); the repository database and the public signing
-key live on the `gh-pages` branch, so GitHub Pages must be enabled. The first
-`Server` line serves packages, the second the database. Import the public key
-(`<repo-name>.gpg`) with `pacman-key --add` and `pacman-key --lsign-key`.
+Packages are served from the first `Server` (a fixed-tag GitHub Release) and the
+repository database from the second (`gh-pages`). Import and locally sign the
+repository key once, so `pacman` trusts the signed packages:
+
+```bash
+curl -fsSLO https://slqy123.github.io/pkgbot/pkgbot.gpg
+sudo pacman-key --add pkgbot.gpg
+sudo pacman-key --lsign-key "$(gpg --show-keys --with-colons pkgbot.gpg | awk -F: '/^fpr/{print $10; exit}')"
+```
+
+Then install packages:
+
+```bash
+sudo pacman -Sy
+sudo pacman -S <package>
+```
+
+---
+
+# pkgbot (the builder)
+
+The tool that produces the repository above. It runs entirely on GitHub
+Actions: it checks upstream versions with
+[nvchecker](https://nvchecker.readthedocs.io/), updates PKGBUILDs, builds each
+package in a clean Arch container, signs the results, and publishes them as
+Release assets plus a `gh-pages` database.
 
 ## Adding a package
 
@@ -34,8 +53,8 @@ update_on:
     prefix: v
 ```
 
-`update_on` entries are passed to [nvchecker](https://nvchecker.readthedocs.io/)
-verbatim. `strategy` selects how the PKGBUILD is kept up to date:
+`update_on` entries are passed to nvchecker verbatim. `strategy` selects how the
+PKGBUILD is kept up to date:
 
 | strategy | upstream | PKGBUILD update |
 | --- | --- | --- |
@@ -50,17 +69,58 @@ the workflow is dispatched manually.
 Optional `repo_depends` lists other packages in this repository that must be
 available when building.
 
+## GPG signing key
+
+Every package and the repository database are signed. Create a dedicated,
+passphrase-less key for CI in a temporary keyring, so it never touches your
+personal one:
+
+```bash
+export GNUPGHOME=$(mktemp -d)
+chmod 700 "$GNUPGHOME"
+
+cat > /tmp/ci-key.params <<'EOF'
+%no-protection
+Key-Type: eddsa
+Key-Curve: ed25519
+Name-Real: pkgbot signing
+Name-Email: pkgbot@example.com
+Expire-Date: 0
+%commit
+EOF
+
+gpg --batch --gen-key /tmp/ci-key.params
+gpg --list-secret-keys --with-colons | awk -F: '/^fpr/{print $10; exit}'
+gpg --armor --export-secret-keys pkgbot@example.com > /tmp/ci-key.asc
+```
+
+Register the key as repository secrets:
+
+```bash
+gh secret set GPG_PRIVATE_KEY < /tmp/ci-key.asc
+gh secret set SIGNING_KEY --body 'pkgbot@example.com'
+```
+
+Then delete the temporary material — a passphrase-less secret key must not leak:
+
+```bash
+gpgconf --kill gpg-agent 2>/dev/null
+rm -rf "$GNUPGHOME" /tmp/ci-key.asc /tmp/ci-key.params
+```
+
+The workflow imports `GPG_PRIVATE_KEY`, signs every package and both database
+files, and exports the public key to `gh-pages` as `<repo-name>.gpg`. Consumers
+import that file as shown in [Usage](#usage). `SIGNING_KEY` is optional and
+defaults to the only key in the keyring.
+
 ## Configuration
 
-Repository secrets:
+- `REPO_NAME` — repository name; defaults to the GitHub repository name.
+- `RELEASE_TAG` — tag of the Release that holds packages; defaults to `packages`.
+- `GPG_PRIVATE_KEY`, `SIGNING_KEY` — see [GPG signing key](#gpg-signing-key).
 
-- `GPG_PRIVATE_KEY` — armored private key used to sign packages and the database.
-- `SIGNING_KEY` — key id or email of the signing key (optional; defaults to the
-  key's own identity).
-
-Set `REPO_NAME` to override the repository name, which otherwise defaults to the
-GitHub repository name, and `RELEASE_TAG` to change the fixed release tag
-(default `packages`).
+GitHub Pages must be enabled for the repository, serving the `gh-pages` branch;
+the first publish creates that branch.
 
 ## Running locally
 
@@ -75,5 +135,5 @@ bash scripts/build.sh <pkgbase>               # build in the current environment
 ## Workflows
 
 - `update.yml` — scheduled (daily) and manual version check, matrix build, and
-  publish to the fixed-tag release and `gh-pages`.
+  publish to the fixed-tag Release and `gh-pages`.
 - `check.yml` — validates package configuration on pull requests.
