@@ -1,6 +1,7 @@
 state/nvchecker.toml
 state/nvchecker_keyfile.toml
 state/newver
+state/detect.outputs
 state/*~
 artifacts/
 *.pkg.tar.zst

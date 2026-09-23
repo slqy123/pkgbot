@@ -5,25 +5,15 @@ import json
 import os
 import sys
 
-from .config import load_packages
+from .config import DETECT_OUTPUTS, load_packages
 from .detect import detect
 from .publish import publish, take
-
-
-def set_output(key: str, value: str) -> None:
-  path = os.environ.get('GITHUB_OUTPUT')
-  if path:
-    with open(path, 'a') as f:
-      f.write(f'{key}={value}\n')
-  else:
-    print(f'{key}={value}')
 
 
 def cmd_detect(args: argparse.Namespace) -> None:
   built = detect(args.packages or None, args.changed_since, args.proxy)
   matrix = {'include': [{'pkg': n} for n in built]} if built else {'include': [{'pkg': '__skip__'}]}
-  set_output('matrix', json.dumps(matrix))
-  set_output('count', str(len(built)))
+  DETECT_OUTPUTS.write_text(f'matrix={json.dumps(matrix)}\ncount={len(built)}\n')
   print(f'{len(built)} package(s) to build: {built}', file=sys.stderr)
 
 

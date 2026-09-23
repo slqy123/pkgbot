@@ -58,7 +58,8 @@ jobs:
           elif [ "${GITHUB_EVENT_NAME}" = push ]; then
             args=(--changed-since "${EVENT_BEFORE}")
           fi
-          sudo -u builder python -m pkgbot detect "${args[@]}"
+          sudo -u builder env GITHUB_TOKEN="${GITHUB_TOKEN}" python -m pkgbot detect "${args[@]}"
+          cat state/detect.outputs >> "$GITHUB_OUTPUT"
       - name: Upload nvchecker state
         uses: actions/upload-artifact@v4
         with:

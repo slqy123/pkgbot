@@ -13,6 +13,7 @@ OLDVER = STATE_DIR / 'oldver'
 NEWVER = STATE_DIR / 'newver'
 NVCHECKER_TOML = STATE_DIR / 'nvchecker.toml'
 NVCHECKER_KEYFILE = STATE_DIR / 'nvchecker_keyfile.toml'
+DETECT_OUTPUTS = STATE_DIR / 'detect.outputs'
 
 STRATEGIES = ('aur', 'github-release', 'vcs', 'none')
 VCS_SUFFIXES = ('-git', '-hg', '-svn', '-bzr')
