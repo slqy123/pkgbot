@@ -1,0 +1,10 @@
+state/nvchecker.toml
+state/nvchecker_keyfile.toml
+state/newver
+state/*~
+artifacts/
+*.pkg.tar.zst
+*.pkg.tar.zst.sig
+src/
+pkg/
+__pycache__/

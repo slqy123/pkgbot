@@ -1,0 +1,13 @@
+pkgname=pkgbot-example
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='Example package for the pkgbot pipeline'
+arch=('any')
+url='https://example.com/'
+license=('MIT')
+source=('hello.sh')
+sha256sums=('b7784c755d95dcf2011b320bf361ea90738cff4f4d202cc0f36671d54e1555fa')
+
+package() {
+  install -Dm755 hello.sh "$pkgdir/usr/bin/pkgbot-example"
+}

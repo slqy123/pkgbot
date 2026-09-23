@@ -1,0 +1,135 @@
+name: update
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: Space separated pkgbase list (empty = all)
+        type: string
+        default: ''
+  push:
+    branches: [main]
+    paths:
+      - 'packages/**'
+      - 'pkgbot/**'
+      - 'scripts/**'
+      - '.github/workflows/update.yml'
+
+concurrency:
+  group: repo-update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    outputs:
+      matrix: ${{ steps.detect.outputs.matrix }}
+      count: ${{ steps.detect.outputs.count }}
+    steps:
+      - name: Install git
+        run: pacman -Sy --noconfirm --needed git
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install tools
+        run: pacman -Sy --noconfirm --needed python python-yaml python-tomli-w nvchecker bubblewrap
+      - name: Detect and update PKGBUILDs
+        id: detect
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_PACKAGES: ${{ github.event.inputs.packages }}
+          EVENT_BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+          chown -R builder:builder packages state
+          args=()
+          if [ -n "${INPUT_PACKAGES}" ]; then
+            read -r -a args <<< "${INPUT_PACKAGES}"
+            args=(--packages "${args[@]}")
+          elif [ "${GITHUB_EVENT_NAME}" = push ]; then
+            args=(--changed-since "${EVENT_BEFORE}")
+          fi
+          sudo -u builder python -m pkgbot detect "${args[@]}"
+      - name: Upload nvchecker state
+        uses: actions/upload-artifact@v4
+        with:
+          name: nvstate
+          path: state/newver
+          if-no-files-found: ignore
+      - name: Commit PKGBUILD updates
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          if ! git diff --quiet -- packages; then
+            git add packages
+            git commit -m 'chore: update PKGBUILDs'
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+
+  build:
+    needs: detect
+    if: ${{ needs.detect.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
+    steps:
+      - name: Install git
+        run: pacman -Sy --noconfirm --needed git
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - name: Build ${{ matrix.pkg }}
+        run: |
+          set -euo pipefail
+          useradd -m builder
+          echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+          chown -R builder:builder packages
+          sudo -u builder bash scripts/build.sh '${{ matrix.pkg }}'
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: pkg-${{ matrix.pkg }}
+          path: packages/${{ matrix.pkg }}/*.pkg.tar.zst*
+          if-no-files-found: error
+
+  publish:
+    needs: [detect, build]
+    if: ${{ always() && needs.detect.result == 'success' && needs.detect.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Install git
+        run: pacman -Sy --noconfirm --needed git
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - name: Install tools
+        run: pacman -Sy --noconfirm --needed python python-yaml python-tomli-w nvchecker gnupg github-cli
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: pkg-*
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: nvstate
+          path: state
+      - name: Sign and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          RELEASE_TAG: packages
+        run: bash scripts/publish.sh

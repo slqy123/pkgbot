@@ -1,0 +1,23 @@
+name: check
+
+on:
+  pull_request:
+    paths:
+      - 'packages/**'
+      - 'pkgbot/**'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Install git
+        run: pacman -Sy --noconfirm --needed git
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: pacman -Sy --noconfirm --needed python python-yaml python-tomli-w
+      - name: Validate configuration
+        run: python -m pkgbot check
