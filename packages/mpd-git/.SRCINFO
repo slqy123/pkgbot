@@ -1,6 +1,6 @@
 pkgbase = mpd-git
 	pkgdesc = Flexible, powerful, server-side application for playing music
-	pkgver = 0.24.12.r526.gfa34f77b8
+	pkgver = 0.24.15.r390.g9b5e70b9f
 	pkgrel = 1
 	url = https://www.musicpd.org/
 	arch = x86_64

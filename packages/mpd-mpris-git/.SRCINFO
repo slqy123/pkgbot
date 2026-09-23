@@ -1,6 +1,6 @@
 pkgbase = mpd-mpris-git
 	pkgdesc = An implementation of the MPRIS protocol for MPD
-	pkgver = 0.4.3.r5.gab9561d
+	pkgver = 0.4.3.r6.ga6f4144
 	pkgrel = 1
 	url = https://github.com/sitiyou/mpd-mpris
 	arch = x86_64

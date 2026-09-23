@@ -4,7 +4,7 @@
 pkgname=bucklespring-libinput-git
 _pkgname=bucklespring
 pkgver=v1.3.6.r100.gd84347c
-pkgrel=1
+pkgrel=2
 pkgdesc="Nostalgia bucklespring keyboard sound, sampled from IBM's Model-M. libinput version"
 arch=('i686' 'x86_64')
 url="https://github.com/slqy123/bucklespring"
