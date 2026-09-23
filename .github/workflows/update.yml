@@ -49,6 +49,7 @@ jobs:
           set -euo pipefail
           useradd -m builder
           echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
+          git config --system --add safe.directory '*'
           chown -R builder:builder packages state
           args=()
           if [ -n "${INPUT_PACKAGES}" ]; then
