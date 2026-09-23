@@ -33,7 +33,9 @@ jobs:
       count: ${{ steps.detect.outputs.count }}
     steps:
       - name: Install git
-        run: pacman -Sy --noconfirm --needed git
+        run: |
+          pacman -Sy --noconfirm --needed git
+          git config --system --add safe.directory '*'
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -49,7 +51,6 @@ jobs:
           set -euo pipefail
           useradd -m builder
           echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
-          git config --system --add safe.directory '*'
           chown -R builder:builder packages state
           args=()
           if [ -n "${INPUT_PACKAGES}" ]; then
@@ -87,7 +88,9 @@ jobs:
       matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
     steps:
       - name: Install git
-        run: pacman -Sy --noconfirm --needed git
+        run: |
+          pacman -Sy --noconfirm --needed git
+          git config --system --add safe.directory '*'
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
@@ -112,7 +115,9 @@ jobs:
     container: archlinux:base-devel
     steps:
       - name: Install git
-        run: pacman -Sy --noconfirm --needed git
+        run: |
+          pacman -Sy --noconfirm --needed git
+          git config --system --add safe.directory '*'
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
