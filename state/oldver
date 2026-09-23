@@ -1,0 +1,25 @@
+{
+  "version": 2,
+  "data": {
+    "bucklespring-libinput-git": {
+      "version": "d84347c3bbc42c2c4fcd7b781b955af4bdc979c5",
+      "revision": "d84347c3bbc42c2c4fcd7b781b955af4bdc979c5"
+    },
+    "cantata-git": {
+      "version": "61d750f90b8545b66ebfca13a2840e3ccd5dae3d",
+      "revision": "61d750f90b8545b66ebfca13a2840e3ccd5dae3d"
+    },
+    "fcitx5-rime-git": {
+      "version": "cd34051ca197c32e9811d9575e7534fa68506d2f",
+      "revision": "cd34051ca197c32e9811d9575e7534fa68506d2f"
+    },
+    "mpd-git": {
+      "version": "9b5e70b9f143a46555b996510bde16c0f96bead4",
+      "revision": "9b5e70b9f143a46555b996510bde16c0f96bead4"
+    },
+    "mpd-mpris-git": {
+      "version": "a6f41440505eb5c41ae3acbfdd9c489e822bfa33",
+      "revision": "a6f41440505eb5c41ae3acbfdd9c489e822bfa33"
+    }
+  }
+}
