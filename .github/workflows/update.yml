@@ -138,5 +138,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          RELEASE_TAG: packages
+          REPO_NAME: ${{ vars.REPO_NAME }}
+          RELEASE_TAG: ${{ vars.RELEASE_TAG }}
         run: bash scripts/publish.sh

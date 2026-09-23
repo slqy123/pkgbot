@@ -114,9 +114,19 @@ defaults to the only key in the keyring.
 
 ## Configuration
 
-- `REPO_NAME` — repository name; defaults to the GitHub repository name.
-- `RELEASE_TAG` — tag of the Release that holds packages; defaults to `packages`.
+- `REPO_NAME` — repository name: the `pacman.conf` section name and the
+  `<name>.db` file; defaults to the GitHub repository name.
+- `RELEASE_TAG` — tag of the Release that holds all assets; defaults to
+  `packages`.
 - `GPG_PRIVATE_KEY`, `SIGNING_KEY` — see [GPG signing key](#gpg-signing-key).
+
+Set the first two as repository variables (Settings → Secrets and variables →
+Actions → Variables):
+
+```bash
+gh variable set REPO_NAME --body myrepo
+gh variable set RELEASE_TAG --body packages
+```
 
 ## Running locally
 
