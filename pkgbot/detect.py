@@ -130,6 +130,8 @@ def detect(
 
   detectable = [p for p in selected if p.update_on]
   results = run_nvchecker(detectable, proxy) if detectable else {}
+  if not NEWVER.exists():
+    NEWVER.write_text('{"version": 2, "data": {}}\n')
 
   built = []
   for p in selected:
