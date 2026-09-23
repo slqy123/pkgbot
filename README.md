@@ -10,15 +10,14 @@ Add the repository to `/etc/pacman.conf`:
 ```
 [pkgbot]
 Server = https://github.com/slqy123/pkgbot/releases/download/packages
-Server = https://slqy123.github.io/pkgbot/$arch
 ```
 
-Packages are served from the first `Server` (a fixed-tag GitHub Release) and the
-repository database from the second (`gh-pages`). Import and locally sign the
-repository key once, so `pacman` trusts the signed packages:
+Packages, the repository database and the signing key are all assets of a
+single fixed-tag GitHub Release. Import and locally sign the repository key
+once, so `pacman` trusts the signed packages:
 
 ```bash
-curl -fsSLO https://slqy123.github.io/pkgbot/pkgbot.gpg
+curl -fsSLO https://github.com/slqy123/pkgbot/releases/download/packages/pkgbot.gpg
 sudo pacman-key --add pkgbot.gpg
 sudo pacman-key --lsign-key "$(gpg --show-keys --with-colons pkgbot.gpg | awk -F: '/^fpr/{print $10; exit}')"
 ```
@@ -38,7 +37,7 @@ The tool that produces the repository above. It runs entirely on GitHub
 Actions: it checks upstream versions with
 [nvchecker](https://nvchecker.readthedocs.io/), updates PKGBUILDs, builds each
 package in a clean Arch container, signs the results, and publishes them as
-Release assets plus a `gh-pages` database.
+assets of a single fixed-tag GitHub Release.
 
 ## Adding a package
 
@@ -109,7 +108,7 @@ rm -rf "$GNUPGHOME" /tmp/ci-key.asc /tmp/ci-key.params
 ```
 
 The workflow imports `GPG_PRIVATE_KEY`, signs every package and both database
-files, and exports the public key to `gh-pages` as `<repo-name>.gpg`. Consumers
+files, and uploads the public key to the Release as `<repo-name>.gpg`. Consumers
 import that file as shown in [Usage](#usage). `SIGNING_KEY` is optional and
 defaults to the only key in the keyring.
 
@@ -118,9 +117,6 @@ defaults to the only key in the keyring.
 - `REPO_NAME` — repository name; defaults to the GitHub repository name.
 - `RELEASE_TAG` — tag of the Release that holds packages; defaults to `packages`.
 - `GPG_PRIVATE_KEY`, `SIGNING_KEY` — see [GPG signing key](#gpg-signing-key).
-
-GitHub Pages must be enabled for the repository, serving the `gh-pages` branch;
-the first publish creates that branch.
 
 ## Running locally
 
@@ -135,5 +131,5 @@ bash scripts/build.sh <pkgbase>               # build in the current environment
 ## Workflows
 
 - `update.yml` — scheduled (daily) and manual version check, matrix build, and
-  publish to the fixed-tag Release and `gh-pages`.
+  publish to the fixed-tag Release.
 - `check.yml` — validates package configuration on pull requests.

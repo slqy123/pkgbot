@@ -22,7 +22,7 @@ def cmd_take(args: argparse.Namespace) -> None:
 
 
 def cmd_publish(args: argparse.Namespace) -> None:
-  publish(args.pages, args.artifacts, args.repo, args.release_tag, args.gh_repo)
+  publish(args.work, args.artifacts, args.repo, args.release_tag, args.gh_repo)
 
 
 def cmd_check(_args: argparse.Namespace) -> None:
@@ -51,7 +51,7 @@ def main(argv: list[str] | None = None) -> None:
   p.set_defaults(func=cmd_take)
 
   p = sub.add_parser('publish', help='sign packages and update the repository database')
-  p.add_argument('--pages', required=True)
+  p.add_argument('--work', required=True)
   p.add_argument('--artifacts', required=True)
   p.add_argument('--repo', required=True)
   p.add_argument('--release-tag')

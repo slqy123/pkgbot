@@ -23,10 +23,14 @@ def sign_enabled() -> bool:
 
 def _sign(path: Path) -> None:
   cmd = ['gpg', '--batch', '--yes', '--detach-sign']
+  passphrase = os.environ.get('GPG_PASSPHRASE')
+  if passphrase:
+    cmd += ['--pinentry-mode', 'loopback', '--passphrase-fd', '0']
   if key := os.environ.get('SIGNING_KEY'):
     cmd += ['--local-user', key]
   cmd.append(str(path))
-  _run(cmd)
+  print('+', ' '.join(cmd), flush=True)
+  subprocess.run(cmd, input=(passphrase or '').encode(), check=True)
 
 
 def _db_filenames(db: Path) -> set[str]:
@@ -47,56 +51,52 @@ def take(names: list[str]) -> None:
   _run(['nvtake', '--ignore-nonexistent', '-c', str(NVCHECKER_TOML), *names], cwd=PACKAGES_DIR)
 
 
-def publish(
-  pages: Path,
-  artifacts: Path,
-  repo: str,
-  release_tag: str | None = None,
-  gh_repo: str | None = None,
-) -> None:
-  pages = Path(pages).resolve()
-  arch_dir = pages / 'x86_64'
-  arch_dir.mkdir(parents=True, exist_ok=True)
+def publish(work: Path, artifacts: Path, repo: str, release_tag: str, gh_repo: str) -> None:
+  work = Path(work).resolve()
+  work.mkdir(parents=True, exist_ok=True)
   signing = sign_enabled()
 
-  added = []
+  uploaded: list[Path] = []
   for pkg in sorted(Path(artifacts).rglob('*.pkg.tar.zst')):
     if signing:
       _sign(pkg)
-    added.append(pkg)
+    uploaded.append(pkg)
+    sig = pkg.with_name(pkg.name + '.sig')
+    if sig.exists():
+      uploaded.append(sig)
 
-  db = arch_dir / f'{repo}.db.tar.zst'
-  if added:
-    _run(['repo-add', str(db), *[str(p) for p in added]])
-    for old in arch_dir.glob('*.old'):
-      old.unlink()
+  db = work / f'{repo}.db.tar.zst'
+  packages = [p for p in uploaded if p.name.endswith('.pkg.tar.zst')]
+  _run(['repo-add', str(db), *[str(p) for p in packages]])
+  for old in work.glob('*.old'):
+    old.unlink()
 
   for ext in ('db', 'files'):
-    real = arch_dir / f'{repo}.{ext}.tar.zst'
-    if not real.exists():
-      continue
-    copy = arch_dir / f'{repo}.{ext}'
+    real = work / f'{repo}.{ext}.tar.zst'
+    copy = work / f'{repo}.{ext}'
     copy.unlink(missing_ok=True)
     shutil.copy2(real, copy)
     if signing:
       _sign(copy)
+    if ext == 'db':
+      uploaded.append(real)
+    uploaded.append(copy)
+    sig = copy.with_name(copy.name + '.sig')
+    if sig.exists():
+      uploaded.append(sig)
 
   if signing:
     out = subprocess.run(
       ['gpg', '--armor', '--export'] + ([os.environ['SIGNING_KEY']] if os.environ.get('SIGNING_KEY') else []),
       capture_output=True, check=True,
     ).stdout
-    (pages / f'{repo}.gpg').write_bytes(out)
+    keyfile = work / f'{repo}.gpg'
+    keyfile.write_bytes(out)
+    uploaded.append(keyfile)
 
-  if added and release_tag and gh_repo:
-    release.ensure_release(gh_repo, release_tag)
-    files = list(added)
-    files += [s for p in added if (s := p.with_name(p.name + '.sig')).exists()]
-    release.upload(gh_repo, release_tag, files)
-    keep = _db_filenames(db)
-    keep |= {n + '.sig' for n in keep}
-    release.cleanup(gh_repo, release_tag, keep)
+  release.ensure_release(gh_repo, release_tag)
+  release.upload(gh_repo, release_tag, uploaded)
 
-  index = pages / 'index.html'
-  if not index.exists():
-    index.write_text(f'<!doctype html>\n<meta charset="utf-8">\n<title>{repo}</title>\n<h1>{repo}</h1>\n')
+  keep = _db_filenames(db)
+  keep |= {n + '.sig' for n in keep}
+  release.cleanup(gh_repo, release_tag, keep)

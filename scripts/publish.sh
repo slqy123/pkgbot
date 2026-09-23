@@ -6,8 +6,9 @@ set -euo pipefail
 
 repo="${REPO_NAME:-${GITHUB_REPOSITORY##*/}}"
 branch="${GITHUB_REF_NAME:-main}"
-pages="$(mktemp -d)"
-trap 'git worktree remove --force "$pages" 2>/dev/null || true; rm -rf "$pages"' EXIT
+tag="${RELEASE_TAG:-packages}"
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
 
 git config user.name 'github-actions[bot]'
 git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -23,15 +24,6 @@ if [ ${#built[@]} -eq 0 ]; then
   exit 0
 fi
 
-if git ls-remote --exit-code --heads origin gh-pages >/dev/null 2>&1; then
-  git fetch origin gh-pages
-  git worktree add --detach "$pages" origin/gh-pages
-else
-  git worktree add --detach "$pages"
-  git -C "$pages" checkout --orphan gh-pages
-  git -C "$pages" rm -rf . >/dev/null 2>&1 || true
-fi
-
 if [ -n "${GPG_PRIVATE_KEY:-}" ]; then
   export GNUPGHOME="$HOME/.gnupg"
   mkdir -p "$GNUPGHOME"
@@ -40,14 +32,11 @@ if [ -n "${GPG_PRIVATE_KEY:-}" ]; then
   export SIGN=1
 fi
 
-python -m pkgbot publish --pages "$pages" --artifacts artifacts --repo "$repo" \
-  --release-tag "${RELEASE_TAG:-}" --gh-repo "$GITHUB_REPOSITORY"
+gh release download "$tag" --repo "$GITHUB_REPOSITORY" \
+  --pattern "$repo.db.tar.zst" --dir "$work" --clobber 2>/dev/null || true
 
-git -C "$pages" add -A
-if ! git -C "$pages" diff --cached --quiet; then
-  git -C "$pages" commit -m "publish: ${built[*]}"
-  git -C "$pages" push origin "HEAD:gh-pages"
-fi
+python -m pkgbot publish --work "$work" --artifacts artifacts --repo "$repo" \
+  --release-tag "$tag" --gh-repo "$GITHUB_REPOSITORY"
 
 python -m pkgbot take "${built[@]}"
 
