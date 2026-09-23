@@ -8,7 +8,7 @@ Actions.
 Add the repository to `/etc/pacman.conf`:
 
 ```
-[pkgbot]
+[sitiyou]
 Server = https://github.com/slqy123/pkgbot/releases/download/packages
 ```
 
@@ -17,9 +17,9 @@ single fixed-tag GitHub Release. Import and locally sign the repository key
 once, so `pacman` trusts the signed packages:
 
 ```bash
-curl -fsSLO https://github.com/slqy123/pkgbot/releases/download/packages/pkgbot.gpg
-sudo pacman-key --add pkgbot.gpg
-sudo pacman-key --lsign-key "$(gpg --show-keys --with-colons pkgbot.gpg | awk -F: '/^fpr/{print $10; exit}')"
+curl -fsSLO https://github.com/slqy123/pkgbot/releases/download/packages/sitiyou.gpg
+sudo pacman-key --add sitiyou.gpg
+sudo pacman-key --lsign-key "$(gpg --show-keys --with-colons sitiyou.gpg | awk -F: '/^fpr/{print $10; exit}')"
 ```
 
 Then install packages:
