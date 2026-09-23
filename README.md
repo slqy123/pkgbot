@@ -118,14 +118,17 @@ defaults to the only key in the keyring.
   `<name>.db` file; defaults to the GitHub repository name.
 - `RELEASE_TAG` — tag of the Release that holds all assets; defaults to
   `packages`.
+- `DEBUG_PACKAGES` — set to `1` to also build `-debug` packages; defaults to
+  release packages only.
 - `GPG_PRIVATE_KEY`, `SIGNING_KEY` — see [GPG signing key](#gpg-signing-key).
 
-Set the first two as repository variables (Settings → Secrets and variables →
+Set the first three as repository variables (Settings → Secrets and variables →
 Actions → Variables):
 
 ```bash
 gh variable set REPO_NAME --body myrepo
 gh variable set RELEASE_TAG --body packages
+gh variable set DEBUG_PACKAGES --body 1
 ```
 
 ## Running locally

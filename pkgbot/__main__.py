@@ -22,7 +22,7 @@ def cmd_take(args: argparse.Namespace) -> None:
 
 
 def cmd_publish(args: argparse.Namespace) -> None:
-  publish(args.work, args.artifacts, args.repo, args.release_tag, args.gh_repo)
+  publish(args.work, args.artifacts, args.repo, args.release_tag, args.gh_repo, args.debug)
 
 
 def cmd_check(_args: argparse.Namespace) -> None:
@@ -56,6 +56,7 @@ def main(argv: list[str] | None = None) -> None:
   p.add_argument('--repo', required=True)
   p.add_argument('--release-tag')
   p.add_argument('--gh-repo', default=os.environ.get('GITHUB_REPOSITORY'))
+  p.add_argument('--debug', action='store_true')
   p.set_defaults(func=cmd_publish)
 
   p = sub.add_parser('check', help='validate package configuration')

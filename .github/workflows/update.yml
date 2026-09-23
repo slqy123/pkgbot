@@ -95,6 +95,8 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
       - name: Build ${{ matrix.pkg }}
+        env:
+          DEBUG_PACKAGES: ${{ vars.DEBUG_PACKAGES }}
         run: |
           set -euo pipefail
           useradd -m builder
@@ -140,4 +142,5 @@ jobs:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           REPO_NAME: ${{ vars.REPO_NAME }}
           RELEASE_TAG: ${{ vars.RELEASE_TAG }}
+          DEBUG_PACKAGES: ${{ vars.DEBUG_PACKAGES }}
         run: bash scripts/publish.sh

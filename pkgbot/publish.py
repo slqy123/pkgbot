@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -40,6 +41,13 @@ def _db_filenames(db: Path) -> set[str]:
   return {line.strip() for line in out.splitlines() if line.strip().endswith('.pkg.tar.zst')}
 
 
+def _db_names(db: Path) -> set[str]:
+  out = subprocess.check_output(
+    ['bsdtar', '-xOf', str(db), '--include', '*/desc'], text=True,
+  )
+  return set(re.findall(r'^%NAME%\n(.+)$', out, re.M))
+
+
 def take(names: list[str]) -> None:
   by_name = {p.pkgbase: p for p in load_packages()}
   names = [n for n in names if n in by_name and by_name[n].update_on]
@@ -51,7 +59,10 @@ def take(names: list[str]) -> None:
   _run(['nvtake', '--ignore-nonexistent', '-c', str(NVCHECKER_TOML), *names], cwd=PACKAGES_DIR)
 
 
-def publish(work: Path, artifacts: Path, repo: str, release_tag: str, gh_repo: str) -> None:
+def publish(
+  work: Path, artifacts: Path, repo: str, release_tag: str, gh_repo: str,
+  debug: bool = False,
+) -> None:
   work = Path(work).resolve()
   work.mkdir(parents=True, exist_ok=True)
   signing = sign_enabled()
@@ -71,6 +82,11 @@ def publish(work: Path, artifacts: Path, repo: str, release_tag: str, gh_repo: s
   for old in work.glob('*.old'):
     old.unlink()
 
+  if not debug:
+    stale = sorted(n for n in _db_names(db) if n.endswith('-debug'))
+    if stale:
+      _run(['repo-remove', str(db), *stale])
+
   for ext in ('db', 'files'):
     real = work / f'{repo}.{ext}.tar.zst'
     copy = work / f'{repo}.{ext}'
@@ -78,8 +94,7 @@ def publish(work: Path, artifacts: Path, repo: str, release_tag: str, gh_repo: s
     shutil.copy2(real, copy)
     if signing:
       _sign(copy)
-    if ext == 'db':
-      uploaded.append(real)
+    uploaded.append(real)
     uploaded.append(copy)
     sig = copy.with_name(copy.name + '.sig')
     if sig.exists():
