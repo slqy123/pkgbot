@@ -1,0 +1,18 @@
+pkgbase = fcitx5-rime-git
+	pkgdesc = RIME support for Fcitx5
+	pkgver = 5.1.14.r9.g8abcb18
+	pkgrel = 1
+	url = https://github.com/slqy123/fcitx5-rime
+	arch = x86_64
+	license = LGPL-2.1-or-later
+	makedepends = git
+	makedepends = extra-cmake-modules
+	makedepends = ninja
+	depends = fcitx5
+	depends = librime
+	conflicts = fcitx-rime
+	conflicts = fcitx5-rime
+	source = git+https://github.com/slqy123/fcitx5-rime.git
+	sha512sums = SKIP
+
+pkgname = fcitx5-rime-git

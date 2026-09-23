@@ -1,0 +1,59 @@
+# Maintainer: Jakub Klinkovský <lahwaacz at archlinux dot org>
+# Contributor: Nguyen Pham Cao <natsukagami at gmail dot com>
+
+pkgname=mpd-mpris-git
+pkgver=0.4.3.r5.gab9561d
+pkgrel=1
+pkgdesc="An implementation of the MPRIS protocol for MPD"
+arch=(x86_64)
+url="https://github.com/sitiyou/mpd-mpris"
+license=(MIT)
+depends=(glibc)
+makedepends=(go git)
+optdepends=("mpd: for connecting to MPD on localhost")
+provides=("mpd-mpris")
+conflicts=("mpd-mpris")
+# we cannot use LTO as otherwise we do not get reproducible package with full RELRO
+options=('!lto')
+source=("$pkgname::git+$url.git")
+b2sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$pkgname"
+  git describe --long --tags | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare(){
+  cd "$srcdir/$pkgname"
+  mkdir -p build
+}
+
+build() {
+  cd "$srcdir/$pkgname"
+
+  # set flags for cgo
+  export CGO_CPPFLAGS="${CPPFLAGS}"
+  export CGO_CFLAGS="${CFLAGS}"
+  export CGO_CXXFLAGS="${CXXFLAGS}"
+  export CGO_LDFLAGS="${LDFLAGS}"
+
+  # set GOPATH so makepkg puts source files into the debug package
+  export GOPATH="$srcdir"
+
+  go build -v \
+    -buildmode=pie \
+    -mod=readonly \
+    -modcacherw \
+    -ldflags "-compressdwarf=false -linkmode external" \
+    -o build ./cmd/...
+}
+
+package() {
+  cd "$srcdir/$pkgname"
+  install -vDm 755 build/mpd-mpris -t "$pkgdir/usr/bin/"
+  install -vDm 644 services/mpd-mpris.service -t "$pkgdir/usr/lib/systemd/user/"
+  install -vDm 644 README.md -t "$pkgdir/usr/share/doc/$pkgname/"
+  install -vDm 644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+# vim:set ts=2 sw=2 et:

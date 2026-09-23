@@ -1,0 +1,18 @@
+pkgbase = mpd-mpris-git
+	pkgdesc = An implementation of the MPRIS protocol for MPD
+	pkgver = 0.4.3.r5.gab9561d
+	pkgrel = 1
+	url = https://github.com/sitiyou/mpd-mpris
+	arch = x86_64
+	license = MIT
+	makedepends = go
+	makedepends = git
+	depends = glibc
+	optdepends = mpd: for connecting to MPD on localhost
+	provides = mpd-mpris
+	conflicts = mpd-mpris
+	options = !lto
+	source = mpd-mpris-git::git+https://github.com/sitiyou/mpd-mpris.git
+	b2sums = SKIP
+
+pkgname = mpd-mpris-git

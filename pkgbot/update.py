@@ -36,6 +36,14 @@ def _pkgver_pkgrel(path: Path) -> tuple[str, str]:
   return info['pkgver'], info['pkgrel']
 
 
+def _write_srcinfo(path: Path) -> None:
+  out = subprocess.run(
+    ['makepkg', '--printsrcinfo'], cwd=path,
+    check=True, capture_output=True,
+  ).stdout
+  (path / '.SRCINFO').write_bytes(out)
+
+
 def _next_pkgrel(rel: str) -> str:
   return str(int(str(rel).split('.')[0]) + 1)
 
@@ -55,15 +63,26 @@ def update_pkgver(pkg: Package, newver: str) -> bool:
   return True
 
 
+def _clean_generated(path: Path, before: set[str]) -> None:
+  for item in path.iterdir():
+    if item.name not in before and item.name != '.SRCINFO':
+      shutil.rmtree(item) if item.is_dir() else item.unlink()
+
+
 def update_vcs(pkg: Package) -> bool:
-  pkgver, pkgrel = _pkgver_pkgrel(pkg.path)
-  _run(['makepkg', '-od', '--noprepare', '-A'], cwd=pkg.path)
-  new_pkgver, _ = _pkgver_pkgrel(pkg.path)
-  if new_pkgver == pkgver:
-    build_file = pkg.path / 'PKGBUILD'
-    text = re.sub(r'(?m)^pkgrel=.*$', f'pkgrel={_next_pkgrel(pkgrel)}', build_file.read_text(), count=1)
-    build_file.write_text(text)
-  return True
+  before = {p.name for p in pkg.path.iterdir()}
+  try:
+    pkgver, pkgrel = _pkgver_pkgrel(pkg.path)
+    _run(['makepkg', '-od', '--noprepare', '-A'], cwd=pkg.path)
+    new_pkgver, _ = _pkgver_pkgrel(pkg.path)
+    if new_pkgver == pkgver:
+      build_file = pkg.path / 'PKGBUILD'
+      text = re.sub(r'(?m)^pkgrel=.*$', f'pkgrel={_next_pkgrel(pkgrel)}', build_file.read_text(), count=1)
+      build_file.write_text(text)
+    _write_srcinfo(pkg.path)
+    return True
+  finally:
+    _clean_generated(pkg.path, before)
 
 
 def update_aur(pkg: Package) -> bool:

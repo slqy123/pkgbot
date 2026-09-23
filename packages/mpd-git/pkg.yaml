@@ -1,0 +1,5 @@
+strategy: vcs
+update_on:
+  - source: git
+    git: https://github.com/slqy123/MPD
+    use_commit: true

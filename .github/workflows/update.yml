@@ -40,7 +40,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install tools
-        run: pacman -Sy --noconfirm --needed python python-yaml python-tomli-w nvchecker bubblewrap
+        run: pacman -Sy --noconfirm --needed python python-yaml python-tomli-w nvchecker
       - name: Detect and update PKGBUILDs
         id: detect
         env:

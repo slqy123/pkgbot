@@ -1,0 +1,5 @@
+strategy: vcs
+update_on:
+  - source: git
+    git: https://github.com/slqy123/fcitx5-rime.git
+    use_commit: true

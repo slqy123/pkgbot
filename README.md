@@ -60,7 +60,7 @@ PKGBUILD is kept up to date:
 | --- | --- | --- |
 | `aur` | `source: aur` | pull the AUR PKGBUILD and its files |
 | `github-release` | any nvchecker source | set `pkgver`, reset `pkgrel`, refresh checksums |
-| `vcs` | `source: vcs` | run `pkgver()` and bump `pkgrel` when unchanged |
+| `vcs` | `source: git` with `use_commit: true` | run `pkgver()` and bump `pkgrel` when unchanged |
 | `none` | — | never updated automatically |
 
 `strategy: none` packages are built only when their directory is changed or when
