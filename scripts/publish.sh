@@ -33,10 +33,16 @@ if [ -n "${GPG_PRIVATE_KEY:-}" ]; then
 fi
 
 gh release download "$tag" --repo "$GITHUB_REPOSITORY" \
-  --pattern "$repo.db.tar.zst" --dir "$work" --clobber 2>/dev/null || true
+  --pattern "$repo.db.tar.zst" --pattern "$repo.files.tar.zst" \
+  --dir "$work" --clobber 2>/dev/null || true
+
+debug_args=()
+if [ "${DEBUG_PACKAGES:-0}" = 1 ]; then
+  debug_args=(--debug)
+fi
 
 python -m pkgbot publish --work "$work" --artifacts artifacts --repo "$repo" \
-  --release-tag "$tag" --gh-repo "$GITHUB_REPOSITORY"
+  --release-tag "$tag" --gh-repo "$GITHUB_REPOSITORY" "${debug_args[@]}"
 
 python -m pkgbot take "${built[@]}"
 
