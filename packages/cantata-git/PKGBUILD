@@ -54,7 +54,7 @@ build() {
     -DCMAKE_INSTALL_PREFIX=/usr \
     "${_flags[@]}"
 
-  cmake --build build -j 8
+  cmake --build build -j "$(nproc)"
 }
 
 package() {
