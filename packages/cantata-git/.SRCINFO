@@ -1,6 +1,6 @@
 pkgbase = cantata-git
 	pkgdesc = Qt6 graphical client for Music Player Daemon (MPD), sitiyou fork
-	pkgver = 3.5.0.r17.ga82cd3d
+	pkgver = 3.5.0.r17.g86f901b
 	pkgrel = 1
 	url = https://github.com/sitiyou/cantata
 	arch = x86_64
