@@ -1,0 +1,5 @@
+strategy: github-release
+update_on:
+  - source: github
+    github: ValveSoftware/gamescope
+    use_max_tag: true
