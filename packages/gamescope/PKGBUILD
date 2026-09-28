@@ -6,7 +6,7 @@
 
 pkgname=gamescope
 pkgver=3.16.31
-pkgrel=1
+pkgrel=2
 pkgdesc='SteamOS session compositing window manager'
 arch=(x86_64)
 url=https://github.com/ValveSoftware/gamescope
