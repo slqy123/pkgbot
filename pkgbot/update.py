@@ -49,18 +49,22 @@ def _next_pkgrel(rel: str) -> str:
 
 
 def update_pkgver(pkg: Package, newver: str) -> bool:
-  pkgver, pkgrel = _pkgver_pkgrel(pkg.path)
-  build_file = pkg.path / 'PKGBUILD'
-  lines = build_file.read_text().splitlines(keepends=True)
-  for i, line in enumerate(lines):
-    if line.startswith('pkgver='):
-      if pkgver != newver:
-        lines[i] = f'pkgver={newver}\n'
-    elif line.startswith('pkgrel='):
-      lines[i] = 'pkgrel=1\n' if pkgver != newver else f'pkgrel={_next_pkgrel(pkgrel)}\n'
-  build_file.write_text(''.join(lines))
-  _run(['updpkgsums'], cwd=pkg.path)
-  return True
+  before = {p.name for p in pkg.path.iterdir()}
+  try:
+    pkgver, pkgrel = _pkgver_pkgrel(pkg.path)
+    build_file = pkg.path / 'PKGBUILD'
+    lines = build_file.read_text().splitlines(keepends=True)
+    for i, line in enumerate(lines):
+      if line.startswith('pkgver='):
+        if pkgver != newver:
+          lines[i] = f'pkgver={newver}\n'
+      elif line.startswith('pkgrel='):
+        lines[i] = 'pkgrel=1\n' if pkgver != newver else f'pkgrel={_next_pkgrel(pkgrel)}\n'
+    build_file.write_text(''.join(lines))
+    _run(['updpkgsums'], cwd=pkg.path)
+    return True
+  finally:
+    _clean_generated(pkg.path, before)
 
 
 def _clean_generated(path: Path, before: set[str]) -> None:
