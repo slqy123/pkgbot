@@ -13,6 +13,12 @@
       "version": "eb787f3d234dcb49430d8740c5a4989128d60f26",
       "revision": "eb787f3d234dcb49430d8740c5a4989128d60f26"
     },
+    "gamescope": {
+      "version": "3.16.31",
+      "gitref": "refs/tags/3.16.31",
+      "revision": "f6916aacdecb4476f05746fef4dc49a650c28f05",
+      "url": "https://github.com/ValveSoftware/gamescope/releases/tag/3.16.31"
+    },
     "mpd-git": {
       "version": "fdddb9a15785c8148f0260f2657afffbb466a170",
       "revision": "fdddb9a15785c8148f0260f2657afffbb466a170"
