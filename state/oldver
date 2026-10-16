@@ -26,6 +26,10 @@
     "mpd-mpris-git": {
       "version": "a6f41440505eb5c41ae3acbfdd9c489e822bfa33",
       "revision": "a6f41440505eb5c41ae3acbfdd9c489e822bfa33"
+    },
+    "ptcpdump-git": {
+      "version": "8600ef2a1e6893e91ff5428a0f2f1b0750bbe351",
+      "revision": "8600ef2a1e6893e91ff5428a0f2f1b0750bbe351"
     }
   }
 }
