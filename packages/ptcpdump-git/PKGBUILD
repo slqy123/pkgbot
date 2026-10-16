@@ -1,7 +1,7 @@
 pkgname=ptcpdump-git
 _pkgname=ptcpdump
 pkgver=0.37.0.r26.g8600ef2
-pkgrel=1
+pkgrel=2
 pkgdesc="Packet capture tool with process awareness (git version)"
 arch=('x86_64' 'aarch64')
 url="https://github.com/mozillazg/ptcpdump"
