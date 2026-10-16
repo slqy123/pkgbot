@@ -1,0 +1,44 @@
+pkgname=ptcpdump-git
+_pkgname=ptcpdump
+pkgver=0.37.0.r26.g8600ef2
+pkgrel=1
+pkgdesc="Packet capture tool with process awareness (git version)"
+arch=('x86_64' 'aarch64')
+url="https://github.com/mozillazg/ptcpdump"
+license=('MIT')
+depends=('glibc' 'libpcap')
+makedepends=('git' 'go')
+provides=('ptcpdump')
+conflicts=('ptcpdump')
+source=("$_pkgname::git+$url.git"
+        "fix-extended-btf-header.patch")
+sha256sums=('SKIP'
+            '55777a14ed2afa43999a7a58033c8c33ab5ddd7768483e25e73fb7c62f1e4935')
+
+pkgver() {
+  cd "$_pkgname"
+  git describe --long --tags --abbrev=7 | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+  cd "$_pkgname"
+  patch -Np1 -i "$srcdir/fix-extended-btf-header.patch"
+}
+
+build() {
+  cd "$_pkgname"
+  local _version
+  _version=$(git describe --tags --abbrev=0 | sed 's/^v//')
+  go build -v \
+    -tags dynamic \
+    -buildmode=pie \
+    -mod=vendor \
+    -trimpath \
+    -ldflags "-linkmode external -extldflags \"$LDFLAGS\" -X github.com/mozillazg/ptcpdump/internal.Version=$_version"
+}
+
+package() {
+  cd "$_pkgname"
+  install -Dvm755 -t "$pkgdir"/usr/bin ptcpdump
+  install -Dvm644 -t "$pkgdir"/usr/share/licenses/$pkgname LICENSE
+}

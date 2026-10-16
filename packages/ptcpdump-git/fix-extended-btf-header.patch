@@ -1,0 +1,33 @@
+diff --git a/vendor/github.com/cilium/ebpf/btf/btf_types.go b/vendor/github.com/cilium/ebpf/btf/btf_types.go
+index 320311b..4e240e9 100644
+--- a/vendor/github.com/cilium/ebpf/btf/btf_types.go
++++ b/vendor/github.com/cilium/ebpf/btf/btf_types.go
+@@ -87,6 +87,13 @@ type btfHeader struct {
+ 	StringLen uint32
+ }
+ 
++// btfLayout is the optional header extension carrying the layout section
++// offsets. It is only used to skip the extension, not to interpret it.
++type btfLayout struct {
++	LayoutOff uint32
++	LayoutLen uint32
++}
++
+ // typeStart returns the offset from the beginning of the .BTF section
+ // to the start of its type entries.
+ func (h *btfHeader) typeStart() int64 {
+@@ -123,6 +130,14 @@ func parseBTFHeader(r io.Reader, bo binary.ByteOrder) (*btfHeader, error) {
+ 		return nil, errors.New("header length shorter than btfHeader size")
+ 	}
+ 
++	if n := int64(binary.Size(&btfLayout{})); remainder >= n {
++		var layout btfLayout
++		if err := binary.Read(r, bo, &layout); err != nil {
++			return nil, fmt.Errorf("can't read layout: %v", err)
++		}
++		remainder -= n
++	}
++
+ 	if _, err := io.CopyN(internal.DiscardZeroes{}, r, remainder); err != nil {
+ 		return nil, fmt.Errorf("header padding: %v", err)
+ 	}

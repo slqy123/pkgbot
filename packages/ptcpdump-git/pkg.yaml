@@ -1,0 +1,5 @@
+strategy: vcs
+update_on:
+  - source: git
+    git: https://github.com/mozillazg/ptcpdump
+    use_commit: true
