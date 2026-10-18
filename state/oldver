@@ -20,8 +20,8 @@
       "url": "https://github.com/ValveSoftware/gamescope/releases/tag/3.16.31"
     },
     "mpd-git": {
-      "version": "6ae75eaa9f7a173644e048a809e889e79df2df95",
-      "revision": "6ae75eaa9f7a173644e048a809e889e79df2df95"
+      "version": "bd048f4fe3549f188a98fca5443b51bae887fb0c",
+      "revision": "bd048f4fe3549f188a98fca5443b51bae887fb0c"
     },
     "mpd-mpris-git": {
       "version": "a6f41440505eb5c41ae3acbfdd9c489e822bfa33",
