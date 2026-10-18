@@ -1,0 +1,70 @@
+pkgname=waybar-git
+pkgver=0.15.0.r5398.g1a71599
+pkgrel=1
+pkgdesc='Highly customizable Wayland bar with workspace layers, sitiyou fork'
+arch=(x86_64)
+url='https://github.com/sitiyou/Waybar'
+license=(MIT)
+depends=(
+  fmt
+  gtk-layer-shell
+  gtkmm3
+  jack
+  jsoncpp
+  libdbusmenu-gtk3
+  libevdev
+  libinput
+  libmm-glib
+  libmpdclient
+  libnl
+  libpulse
+  libsigc++
+  libwireplumber
+  libxkbcommon
+  playerctl
+  sndio
+  spdlog
+  upower
+  wayland
+)
+makedepends=(catch2 cmake git glib2-devel meson python-setuptools scdoc wayland-protocols)
+checkdepends=(bash)
+optdepends=('otf-font-awesome: Icons in the default configuration')
+provides=("waybar=${pkgver%.g*}")
+conflicts=(waybar)
+backup=(etc/xdg/waybar/config.jsonc etc/xdg/waybar/style.css)
+source=('waybar-sitiyou::git+https://github.com/sitiyou/Waybar.git')
+sha256sums=('SKIP')
+
+pkgver() {
+  cd waybar-sitiyou
+  local version
+  if version=$(git describe --long --tags --abbrev=7 --exclude='*[a-zA-Z][a-zA-Z]*' 2>/dev/null); then
+    printf '%s\n' "$version" | sed -E 's/^[^0-9]*//;s/([^-]*-g)/r\1/;s/-/./g'
+  else
+    version=$(sed -n "s/^[[:space:]]*version: '\([^']*\)'.*/\1/p" meson.build)
+    printf '%s.r%s.g%s' "$version" "$(git rev-list --count HEAD)" "$(git rev-parse --short=7 HEAD)"
+  fi
+}
+
+build() {
+  local _meson_args=(
+    -Dexperimental=true
+    -Dcava=disabled
+    -Dgps=disabled
+  )
+  if ((!CHECKFUNC)); then
+    _meson_args+=(-Dtests=disabled)
+  fi
+  arch-meson "${_meson_args[@]}" waybar-sitiyou build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs --no-rebuild --suite waybar
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+  install -Dm644 waybar-sitiyou/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
