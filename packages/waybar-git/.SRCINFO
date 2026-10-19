@@ -1,7 +1,7 @@
 pkgbase = waybar-git
 	pkgdesc = Highly customizable Wayland bar with workspace layers, sitiyou fork
-	pkgver = 0.15.0.r5398.g1a71599
-	pkgrel = 2
+	pkgver = 0.15.0.r5398.g30e1a65
+	pkgrel = 1
 	url = https://github.com/sitiyou/Waybar
 	arch = x86_64
 	license = MIT
