@@ -4,13 +4,11 @@ import os
 import re
 import shutil
 import subprocess
-import tempfile
 from pathlib import Path
 
-from .config import Package, VCS_SUFFIXES
+from .config import Package
 
 AUR_URL = 'https://aur.archlinux.org/{}.git'
-AUR_SKIP = {'.git', '.SRCINFO', '.AURINFO', '.gitignore'}
 
 
 def _run(cmd: list[str], cwd: Path) -> None:
@@ -89,27 +87,7 @@ def update_vcs(pkg: Package) -> bool:
     _clean_generated(pkg.path, before)
 
 
-def update_aur(pkg: Package) -> bool:
-  name = pkg.update_on[0].get('aur') or pkg.pkgbase
-  with tempfile.TemporaryDirectory() as td:
-    _run(['git', 'clone', '--depth=1', AUR_URL.format(name), name], cwd=Path(td))
-    src = Path(td) / name
-    for item in src.iterdir():
-      if item.name in AUR_SKIP:
-        continue
-      dest = pkg.path / item.name
-      if item.is_dir():
-        shutil.copytree(item, dest, dirs_exist_ok=True)
-      else:
-        shutil.copy2(item, dest)
-  if name.endswith(VCS_SUFFIXES):
-    update_vcs(pkg)
-  return True
-
-
 def update_package(pkg: Package, newver: str | None) -> bool:
-  if pkg.strategy == 'aur':
-    return update_aur(pkg)
   if pkg.strategy == 'github-release':
     if not newver:
       return False

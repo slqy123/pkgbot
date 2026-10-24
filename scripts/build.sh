@@ -3,6 +3,18 @@ set -euo pipefail
 
 pkg="${1:?usage: build.sh <pkgbase>}"
 cd "packages/$pkg"
+output="$PWD"
+if [ -n "${2:-}" ]; then
+  commit="${3:?AUR commit is required}"
+  [[ "$commit" =~ ^[0-9a-f]{40}$ ]] || { echo 'invalid AUR commit' >&2; exit 1; }
+  work="$(mktemp -d)"
+  trap 'rm -rf "$work"' EXIT
+  git -C "$work" init
+  git -C "$work" remote add origin "$2"
+  git -C "$work" fetch --depth=1 origin "$commit"
+  git -C "$work" checkout --detach FETCH_HEAD
+  cd "$work"
+fi
 
 if grep -q '^validpgpkeys=' PKGBUILD; then
   bash -s <<'EOF' || true
@@ -32,3 +44,6 @@ EOF
 fi
 
 makepkg --syncdeps --noconfirm --cleanbuild
+if [ -n "${work:-}" ]; then
+  cp ./*.pkg.tar.zst "$output/"
+fi

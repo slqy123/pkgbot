@@ -48,6 +48,12 @@ def load_package(pkgbase: str) -> Package:
   update_on = conf.get('update_on') or []
   if not isinstance(update_on, list) or not all(isinstance(x, dict) for x in update_on):
     raise ValueError(f'{pkgbase}: update_on must be a list of dicts')
+  if strategy == 'aur':
+    if len(update_on) != 1 or update_on[0].get('source') != 'aur':
+      raise ValueError(f'{pkgbase}: aur strategy requires one source: aur entry')
+    name = update_on[0].get('aur') or pkgbase
+    if not isinstance(name, str) or not name or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789@._+-' for c in name) or name.startswith('-'):
+      raise ValueError(f'{pkgbase}: invalid AUR pkgbase')
   if strategy != 'none' and not update_on:
     raise ValueError(f'{pkgbase}: update_on is required for strategy {strategy!r}')
 

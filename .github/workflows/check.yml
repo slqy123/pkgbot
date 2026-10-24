@@ -5,6 +5,8 @@ on:
     paths:
       - 'packages/**'
       - 'pkgbot/**'
+      - 'tests/**'
+      - '.github/workflows/check.yml'
 
 permissions:
   contents: read
@@ -21,3 +23,5 @@ jobs:
         run: pacman -Sy --noconfirm --needed python python-yaml python-tomli-w
       - name: Validate configuration
         run: python -m pkgbot check
+      - name: Run tests
+        run: python -m unittest discover -s tests

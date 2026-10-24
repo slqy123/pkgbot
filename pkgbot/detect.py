@@ -12,7 +12,7 @@ from .config import (
   NEWVER, NVCHECKER_KEYFILE, NVCHECKER_TOML, OLDVER, PACKAGES_DIR,
   Package, load_packages,
 )
-from .update import update_package
+from .update import AUR_URL, update_package
 
 
 @dataclass
@@ -27,6 +27,10 @@ class NvResult:
 def effective_config(packages: list[Package]) -> dict[str, dict]:
   conf: dict[str, dict] = {}
   for p in packages:
+    if p.strategy == 'aur':
+      name = p.update_on[0].get('aur') or p.pkgbase
+      conf[p.pkgbase] = {'source': 'git', 'git': AUR_URL.format(name), 'use_commit': True}
+      continue
     for i, entry in enumerate(p.update_on):
       e = {k: (p.pkgbase if v in (None, '') else v) for k, v in entry.items()}
       conf[p.pkgbase if i == 0 else f'{p.pkgbase}:{i}'] = e
@@ -144,6 +148,10 @@ def detect(
       r = results.get(p.pkgbase)
       if r is None or r.error:
         print(f'{p.pkgbase}: skipped (nvchecker error)', file=sys.stderr)
+        continue
+      if p.strategy == 'aur':
+        if r.newver and (r.changed or force):
+          built.append(p.pkgbase)
         continue
       if r.changed or r.rebuild:
         try:

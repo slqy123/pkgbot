@@ -5,14 +5,25 @@ import json
 import os
 import sys
 
-from .config import DETECT_OUTPUTS, load_packages
+from .config import DETECT_OUTPUTS, NEWVER, load_packages
 from .detect import detect
 from .publish import publish, take
+from .update import AUR_URL
 
 
 def cmd_detect(args: argparse.Namespace) -> None:
   built = detect(args.packages or None, args.changed_since, args.proxy)
-  matrix = {'include': [{'pkg': n} for n in built]} if built else {'include': [{'pkg': '__skip__'}]}
+  by_name = {p.pkgbase: p for p in load_packages()}
+  versions = json.loads(NEWVER.read_text())['data']
+  entries = []
+  for name in built:
+    entry = {'pkg': name, 'aur_url': '', 'aur_commit': ''}
+    pkg = by_name[name]
+    if pkg.strategy == 'aur':
+      entry['aur_url'] = AUR_URL.format(pkg.update_on[0].get('aur') or name)
+      entry['aur_commit'] = versions[name]['version']
+    entries.append(entry)
+  matrix = {'include': entries or [{'pkg': '__skip__'}]}
   DETECT_OUTPUTS.write_text(f'matrix={json.dumps(matrix)}\ncount={len(built)}\n')
   print(f'{len(built)} package(s) to build: {built}', file=sys.stderr)
 
@@ -28,7 +39,7 @@ def cmd_publish(args: argparse.Namespace) -> None:
 def cmd_check(_args: argparse.Namespace) -> None:
   bad = []
   for p in load_packages():
-    if not (p.path / 'PKGBUILD').is_file():
+    if p.strategy != 'aur' and not (p.path / 'PKGBUILD').is_file():
       bad.append(f'{p.pkgbase}: missing PKGBUILD')
   if bad:
     print('\n'.join(bad), file=sys.stderr)

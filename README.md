@@ -57,10 +57,30 @@ PKGBUILD is kept up to date:
 
 | strategy | upstream | PKGBUILD update |
 | --- | --- | --- |
-| `aur` | `source: aur` | pull the AUR PKGBUILD and its files |
+| `aur` | `source: aur` | build directly from a pinned AUR Git commit |
 | `github-release` | any nvchecker source | set `pkgver`, reset `pkgrel`, refresh checksums |
 | `vcs` | `source: git` with `use_commit: true` | run `pkgver()` and bump `pkgrel` when unchanged |
 | `none` | — | never updated automatically |
+
+For an AUR package, only `packages/<pkgbase>/pkg.yaml` is needed:
+
+```yaml
+strategy: aur
+update_on:
+  - source: aur
+    aur: example
+```
+
+Use the AUR package base name, including for split packages. Changes to the AUR
+Git repository trigger builds even if the package version is unchanged. Builds
+use the exact detected commit without storing AUR packaging files here. Failed
+builds are retried on the next check. Existing locally copied AUR packaging
+files can be removed when switching to this mode.
+
+AUR dependencies must be provided separately; they are not imported automatically.
+For VCS packages, this mode follows AUR packaging changes, not commits in the
+project's source repository. AUR PKGBUILDs execute code: only add maintainers you
+trust.
 
 `strategy: none` packages are built only when their directory is changed or when
 the workflow is dispatched manually.

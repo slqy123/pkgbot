@@ -97,12 +97,14 @@ jobs:
       - name: Build ${{ matrix.pkg }}
         env:
           DEBUG_PACKAGES: ${{ vars.DEBUG_PACKAGES }}
+          AUR_URL: ${{ matrix.aur_url }}
+          AUR_COMMIT: ${{ matrix.aur_commit }}
         run: |
           set -euo pipefail
           useradd -m builder
           echo 'builder ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/builder
           chown -R builder:builder packages
-          sudo -u builder bash scripts/build.sh '${{ matrix.pkg }}'
+          sudo -u builder env DEBUG_PACKAGES="${DEBUG_PACKAGES}" bash scripts/build.sh '${{ matrix.pkg }}' "${AUR_URL}" "${AUR_COMMIT}"
       - name: Upload package
         uses: actions/upload-artifact@v4
         with:
