@@ -65,6 +65,11 @@ PKGBUILD is kept up to date:
 `strategy: none` packages are built only when their directory is changed or when
 the workflow is dispatched manually.
 
+Set `enabled: false` in `pkg.yaml` to temporarily disable a package. Disabled
+packages are skipped during version checks, updates, and CI builds, even when
+explicitly selected manually. Existing published packages and version records
+are retained. Remove the setting or set `enabled: true` to re-enable it.
+
 Optional `repo_depends` lists other packages in this repository that must be
 available when building.
 

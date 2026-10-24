@@ -26,6 +26,7 @@ class Package:
   strategy: str
   update_on: list[dict] = field(default_factory=list)
   repo_depends: list[str] = field(default_factory=list)
+  enabled: bool = True
 
 
 def load_package(pkgbase: str) -> Package:
@@ -35,6 +36,10 @@ def load_package(pkgbase: str) -> Package:
     raise ValueError(f'{pkgbase}: missing pkg.yaml')
   with conf_path.open() as f:
     conf = yaml.safe_load(f) or {}
+
+  enabled = conf.get('enabled', True)
+  if not isinstance(enabled, bool):
+    raise ValueError(f'{pkgbase}: enabled must be a boolean')
 
   strategy = conf.get('strategy')
   if strategy not in STRATEGIES:
@@ -52,6 +57,7 @@ def load_package(pkgbase: str) -> Package:
     strategy = strategy,
     update_on = update_on,
     repo_depends = list(conf.get('repo_depends') or []),
+    enabled = enabled,
   )
 
 

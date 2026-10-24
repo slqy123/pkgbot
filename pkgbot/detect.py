@@ -128,6 +128,11 @@ def detect(
   else:
     selected = all_packages
 
+  for p in selected:
+    if not p.enabled:
+      print(f'{p.pkgbase}: skipped (disabled)', file=sys.stderr)
+  selected = [p for p in selected if p.enabled]
+
   detectable = [p for p in selected if p.update_on]
   results = run_nvchecker(detectable, proxy) if detectable else {}
   if not NEWVER.exists():
