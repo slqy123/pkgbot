@@ -1,6 +1,6 @@
 pkgbase = waybar-git
 	pkgdesc = Highly customizable Wayland bar with workspace layers, sitiyou fork
-	pkgver = 0.15.0.r5398.g30e1a65
+	pkgver = 0.15.0.r5404.gbe6c807
 	pkgrel = 1
 	url = https://github.com/sitiyou/Waybar
 	arch = x86_64
@@ -35,7 +35,7 @@ pkgbase = waybar-git
 	depends = upower
 	depends = wayland
 	optdepends = otf-font-awesome: Icons in the default configuration
-	provides = waybar=0.15.0.r5398
+	provides = waybar=0.15.0.r5404
 	conflicts = waybar
 	backup = etc/xdg/waybar/config.jsonc
 	backup = etc/xdg/waybar/style.css
