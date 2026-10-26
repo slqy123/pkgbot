@@ -44,6 +44,14 @@ EOF
 fi
 
 makepkg --syncdeps --noconfirm --cleanbuild
-if [ -n "${work:-}" ]; then
-  cp ./*.pkg.tar.zst "$output/"
-fi
+mapfile -t packages < <(makepkg --packagelist)
+for package in "${packages[@]}"; do
+  for file in "$package" "$package.sig"; do
+    [[ -f "$file" ]] || continue
+    name="${file##*/}"
+    destination="$output/${name//:/_}"
+    if [[ "$file" != "$destination" ]]; then
+      mv -- "$file" "$destination"
+    fi
+  done
+done

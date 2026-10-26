@@ -55,11 +55,11 @@ pkgbase = pipewire-audio
 	depends = libwebrtc-audio-processing-1.so=3-64
 	provides = ladspa-host
 	provides = lv2-host
-	noextract = official-pipewire-audio-1:1.6.10-1-x86_64.pkg.tar.zst
+	noextract = official-pipewire-audio-1.6.10-1-x86_64.tar.zst
 	options = !debug
 	options = !strip
 	source = git+https://gitlab.freedesktop.org/pipewire/pipewire.git#tag=1.6.10
-	source = official-pipewire-audio-1:1.6.10-1-x86_64.pkg.tar.zst::https://archive.archlinux.org/packages/p/pipewire-audio/pipewire-audio-1:1.6.10-1-x86_64.pkg.tar.zst
+	source = official-pipewire-audio-1.6.10-1-x86_64.tar.zst::https://archive.archlinux.org/packages/p/pipewire-audio/pipewire-audio-1:1.6.10-1-x86_64.pkg.tar.zst
 	source = alsa-drain-xrun.patch
 	b2sums = 3c4645252b9affb46852be4d3103fc94664f76df1a1b64b7a8aee011f26b38f10d5bd189fdef65b239c9e13e016dbd25070b791c7ec4e2870777231aac3a8bbd
 	b2sums = cc78646f9bda24c8efeb95b2c68c44b099fe0b53a858b0c0ec8f29c9c2a0a8920abd0a569c155f4220308acafe4cc5411fef9d4633801042e8f83f6100f588f4

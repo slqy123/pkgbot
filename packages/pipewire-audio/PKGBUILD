@@ -56,7 +56,7 @@ depends=(
 makedepends=(git pkgconf)
 provides=(ladspa-host lv2-host)
 options=(!debug !strip)
-_binary="official-pipewire-audio-1:${pkgver}-1-x86_64.pkg.tar.zst"
+_binary="official-pipewire-audio-${pkgver}-1-x86_64.tar.zst"
 source=(
   "git+https://gitlab.freedesktop.org/pipewire/pipewire.git#tag=$pkgver"
   "$_binary::https://archive.archlinux.org/packages/p/pipewire-audio/pipewire-audio-1:${pkgver}-1-x86_64.pkg.tar.zst"
