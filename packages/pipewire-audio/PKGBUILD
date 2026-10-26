@@ -1,0 +1,89 @@
+pkgname=pipewire-audio
+pkgver=1.6.10
+pkgrel=1
+epoch=1
+pkgdesc="Low-latency audio/video router and processor - Audio support"
+arch=(x86_64)
+url="https://pipewire.org"
+license=(MIT)
+depends=(
+  'libpipewire=1:1.6.10-1'
+  'libpipewire-0.3.so=0-64'
+  'pipewire=1:1.6.10-1'
+  'alsa-card-profiles'
+  'alsa-lib'
+  'libasound.so=2-64'
+  'bluez-libs'
+  'libbluetooth.so=3-64'
+  'dbus'
+  'libdbus-1.so=3-64'
+  'fftw'
+  'libfftw3f.so=3-64'
+  'glib2'
+  'libglib-2.0.so=0-64'
+  'libgobject-2.0.so=0-64'
+  'libgio-2.0.so=0-64'
+  'glibc'
+  'libebur128'
+  'libfdk-aac'
+  'libfdk-aac.so=2-64'
+  'libfreeaptx'
+  'libfreeaptx.so=0-64'
+  'libgcc'
+  'liblc3'
+  'liblc3.so=1-64'
+  'libldac'
+  'libldacBT_enc.so=2-64'
+  'libmysofa'
+  'libmysofa.so=1-64'
+  'libsndfile'
+  'libsndfile.so=1-64'
+  'libstdc++'
+  'libusb'
+  'libusb-1.0.so=0-64'
+  'lilv'
+  'liblilv-0.so=0-64'
+  'opus'
+  'libopus.so=0-64'
+  'sbc'
+  'libsbc.so=1-64'
+  'spandsp'
+  'libspandsp.so=2-64'
+  'systemd-libs'
+  'webrtc-audio-processing-1'
+  'libwebrtc-audio-processing-1.so=3-64'
+)
+makedepends=(git pkgconf)
+provides=(ladspa-host lv2-host)
+options=(!debug !strip)
+_binary="official-pipewire-audio-1:${pkgver}-1-x86_64.pkg.tar.zst"
+source=(
+  "git+https://gitlab.freedesktop.org/pipewire/pipewire.git#tag=$pkgver"
+  "$_binary::https://archive.archlinux.org/packages/p/pipewire-audio/pipewire-audio-1:${pkgver}-1-x86_64.pkg.tar.zst"
+  alsa-drain-xrun.patch
+)
+noextract=("$_binary")
+b2sums=(
+  '3c4645252b9affb46852be4d3103fc94664f76df1a1b64b7a8aee011f26b38f10d5bd189fdef65b239c9e13e016dbd25070b791c7ec4e2870777231aac3a8bbd'
+  'cc78646f9bda24c8efeb95b2c68c44b099fe0b53a858b0c0ec8f29c9c2a0a8920abd0a569c155f4220308acafe4cc5411fef9d4633801042e8f83f6100f588f4'
+  '13c3f5327883bec311a6c94b57b224f805440c5df94a005c00dccc7f1709109cf7bdd074b1c90b339be018022f44660c5ad467ce0b38fe88add26fe47c6d4481'
+)
+
+prepare() {
+  cd pipewire
+  patch -Np1 -i "$srcdir/alsa-drain-xrun.patch"
+}
+
+build() {
+  cc $CPPFLAGS $CFLAGS -shared -fPIC -DPIC \
+    pipewire/pipewire-alsa/alsa-plugins/pcm_pipewire.c \
+    -o libasound_module_pcm_pipewire.so \
+    $LDFLAGS $(pkg-config --cflags --libs libpipewire-0.3 alsa)
+}
+
+package() {
+  bsdtar -xf "$srcdir/$_binary" -C "$pkgdir" \
+    --exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE
+  install -m755 "$srcdir/libasound_module_pcm_pipewire.so" \
+    "$pkgdir/usr/lib/alsa-lib/libasound_module_pcm_pipewire.so"
+}
