@@ -1,0 +1,27 @@
+pkgname=codexbar-git
+pkgver=0.8.5.r1.g3ed4a99
+pkgrel=1
+pkgdesc='Waybar widget displaying OpenAI Codex subscription usage with colored progress bars'
+arch=('any')
+url='https://github.com/sitiyou/codexbar'
+license=('MIT')
+depends=('bash' 'waybar' 'curl' 'jq' 'coreutils' 'util-linux')
+makedepends=('git')
+optdepends=('libnotify: desktop notifications on session expiry'
+            'otf-font-awesome: OpenAI brand icon (Font Awesome >= 7.0.0)'
+            'ttf-jetbrains-mono-nerd: monospace font the tooltip pins by default (--tooltip-font)')
+conflicts=('codexbar' 'waybar-codex-usage')
+provides=("codexbar=$pkgver" 'waybar-codex-usage')
+source=("$pkgname::git+$url.git")
+sha256sums=('SKIP')
+
+pkgver() {
+    cd "$srcdir/$pkgname"
+    git describe --long --tags --abbrev=7 | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+package() {
+    cd "$srcdir/$pkgname"
+    make install DESTDIR="$pkgdir" PREFIX=/usr
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

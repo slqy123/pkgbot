@@ -1,0 +1,25 @@
+pkgbase = codexbar-git
+	pkgdesc = Waybar widget displaying OpenAI Codex subscription usage with colored progress bars
+	pkgver = 0.8.5.r1.g3ed4a99
+	pkgrel = 1
+	url = https://github.com/sitiyou/codexbar
+	arch = any
+	license = MIT
+	makedepends = git
+	depends = bash
+	depends = waybar
+	depends = curl
+	depends = jq
+	depends = coreutils
+	depends = util-linux
+	optdepends = libnotify: desktop notifications on session expiry
+	optdepends = otf-font-awesome: OpenAI brand icon (Font Awesome >= 7.0.0)
+	optdepends = ttf-jetbrains-mono-nerd: monospace font the tooltip pins by default (--tooltip-font)
+	provides = codexbar=0.8.5.r1.g3ed4a99
+	provides = waybar-codex-usage
+	conflicts = codexbar
+	conflicts = waybar-codex-usage
+	source = codexbar-git::git+https://github.com/sitiyou/codexbar.git
+	sha256sums = SKIP
+
+pkgname = codexbar-git
