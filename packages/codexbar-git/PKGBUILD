@@ -1,6 +1,6 @@
 pkgname=codexbar-git
 pkgver=0.8.5.r1.g3ed4a99
-pkgrel=1
+pkgrel=2
 pkgdesc='Waybar widget displaying OpenAI Codex subscription usage with colored progress bars'
 arch=('any')
 url='https://github.com/sitiyou/codexbar'
