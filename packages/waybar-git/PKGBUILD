@@ -1,5 +1,5 @@
 pkgname=waybar-git
-pkgver=0.15.0.r5414.g94013cb
+pkgver=0.15.0.r5413.g747e3dd
 pkgrel=1
 pkgdesc='Highly customizable Wayland bar with workspace layers, sitiyou fork'
 arch=(x86_64)
