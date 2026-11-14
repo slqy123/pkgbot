@@ -1,6 +1,6 @@
 pkgname=ptcpdump-git
 _pkgname=ptcpdump
-pkgver=0.37.1.r0.g9f05be6
+pkgver=0.37.1.r2.gffdfcfd
 pkgrel=1
 pkgdesc="Packet capture tool with process awareness (git version)"
 arch=('x86_64' 'aarch64')
