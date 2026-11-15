@@ -83,6 +83,7 @@ build() {
         -D documentation=enabled \
         -D adplug=disabled \
         -D sndio=disabled \
+        -D tinyalsa=disabled \
         -D shine=disabled \
         -D tremor=disabled \
         -D openmpt=disabled \
