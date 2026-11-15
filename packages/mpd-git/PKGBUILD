@@ -16,7 +16,7 @@
 
 pkgname=mpd-git
 pkgver=0.24.19.r497.ga5b457922
-pkgrel=1
+pkgrel=2
 pkgdesc="Flexible, powerful, server-side application for playing music"
 url="https://www.musicpd.org/"
 license=(BSD-2-Clause GPL-2.0-or-later)
