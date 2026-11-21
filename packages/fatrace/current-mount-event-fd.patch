@@ -1,6 +1,6 @@
 --- a/fatrace.c
 +++ b/fatrace.c
-@@ -838,12 +838,18 @@
+@@ -838,12 +838,31 @@
      parse_args (argc, argv);
  
  #ifdef FAN_REPORT_FID
@@ -9,7 +9,20 @@
 -        fid_mode = 1;
 +    /* A single mount can report ordinary I/O with event fds even when
 +     * its filesystem has no usable fsid or exportable file handles. */
-+    if (option_current_mount && !(option_filter_mask & (FAN_CREATE | FAN_DELETE | FAN_MOVE))) {
++    bool use_event_fd = false;
++    if (option_current_mount) {
++        use_event_fd = !(option_filter_mask & (FAN_CREATE | FAN_DELETE | FAN_MOVE));
++        if (option_filter_mask == 0xffffffff) {
++            struct statfs st;
++            const fsid_t zero_fsid = {0};
++            if (statfs (".", &st) == 0 &&
++                memcmp (&st.f_fsid, &zero_fsid, sizeof zero_fsid) == 0) {
++                warnx ("This mount has no fsid; reporting open, read, write and close events only");
++                use_event_fd = true;
++            }
++        }
++    }
++    if (use_event_fd) {
 +        mark_mode = FAN_MARK_ADD | FAN_MARK_MOUNT;
 +    } else {
 +        fan_fd = fanotify_init (FAN_CLASS_NOTIF | FAN_REPORT_FID, O_LARGEFILE);

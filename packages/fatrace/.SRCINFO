@@ -1,7 +1,7 @@
 pkgbase = fatrace
 	pkgdesc = Reports file access events from running processes.
 	pkgver = 0.19.1
-	pkgrel = 2
+	pkgrel = 4
 	url = https://github.com/martinpitt/fatrace
 	arch = x86_64
 	arch = aarch64
@@ -12,6 +12,6 @@ pkgbase = fatrace
 	source = fatrace-0.19.1.tar.gz::https://github.com/martinpitt/fatrace/archive/0.19.1.tar.gz
 	source = current-mount-event-fd.patch
 	sha256sums = fd8f143f4e162d36c8ae29c51b32d315415447829c81091e3bb86b326051c77c
-	sha256sums = 5592b840dab40b9c1ebda609707e540c7c8178facb2f3a84d140d1b97216613d
+	sha256sums = 15b14c68048066f33f9ec24bc0a1436490de9f21fe75562a4269bead67200faf
 
 pkgname = fatrace
