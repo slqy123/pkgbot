@@ -1,7 +1,7 @@
 # Based on the AUR fatrace package by Markus Weimar and Frank Phillips.
 pkgname=fatrace
 pkgver=0.19.1
-pkgrel=2
+pkgrel=3
 pkgdesc='Reports file access events from running processes.'
 arch=('x86_64' 'aarch64' 'armv6l')
 url='https://github.com/martinpitt/fatrace'
