@@ -16,10 +16,10 @@
 
 pkgname=mpd-git
 pkgver=0.24.20.r507.g4fd13d88f
-pkgrel=1
+pkgrel=2
 pkgdesc="Flexible, powerful, server-side application for playing music"
 url="https://www.musicpd.org/"
-license=(BSD-2-Clause GPL-2.0-or-later)
+license=(BSD-2-Clause GPL-2.0-or-later GPL-3.0-or-later)
 arch=(x86_64)
 depends=(bzip2 chromaprint expat fmt gcc-libs glibc
          hicolor-icon-theme lame libcdio libcdio-paranoia libgme
@@ -38,22 +38,26 @@ makedepends=(alsa-lib audiofile avahi boost curl dbus faad2
              ffmpeg flac fluidsynth git icu jack libao libid3tag libmikmod
              libmpdclient libogg libpulse libsamplerate libsndfile libupnp
              libvorbis meson mpg123 python-sphinx python-sphinx_rtd_theme
-             systemd-libs twolame nlohmann-json)
+             rust systemd-libs twolame nlohmann-json)
 provides=(mpd)
 conflicts=(mpd)
 backup=("etc/mpd.conf")
+_fooyin_tak_commit=7e05ad9665f4f3cb797e5487872b6c3eacff8d73
 source=("mpd::git+https://github.com/slqy123/MPD"
         "mpd.conf"
         "mpd.sysusers"
-        "mpd.tmpfiles")
+        "mpd.tmpfiles"
+        "fooyin-tak-${_fooyin_tak_commit}.tar.gz::https://codeload.github.com/polyv0x/fooyin-tak/tar.gz/${_fooyin_tak_commit}")
 sha256sums=('SKIP'
             'f40f68205834ca53cea3372e930bfe6c2f9ecc9df3b1605df2fec63a658b2e03'
             '0b74c6e5db08daab3091dc15a6b0c75210ba2f9e98fa074f6cfd605a461056b6'
-            '2faa85c12449a5b3ca422ff1c1fa06d057c7e262a74bfa6298c914a92d6f2e7a')
+            '2faa85c12449a5b3ca422ff1c1fa06d057c7e262a74bfa6298c914a92d6f2e7a'
+            'aba6b387f639e8582267529ff5c07656d531cec4b4718a905139e23d98cb2530')
 b2sums=('SKIP'
         '0969a3c477b6a3f34b44e067e515d7f306414dd14e0163584417b9d071e3cc825898219f7ff66ead7905b15429b8411304052d3b2b14a72e560bfabf9bf0adcf'
         '4ab6e415284c77802a39d0913d701fe55e56f3c22b19557661fbef77e456b5e1d151da4202695282b956602e716a7afdb994aa2fc17368b9a0d0d051d47a3afb'
-        'd7b587c25dd5830c27af475a8fdd8102139d7c8fdd6f04fe23b36be030e4411582e289f575c299255ff8183096f7d47247327276f9a24641cbd032d9675b837a')
+        'd7b587c25dd5830c27af475a8fdd8102139d7c8fdd6f04fe23b36be030e4411582e289f575c299255ff8183096f7d47247327276f9a24641cbd032d9675b837a'
+        '75ae42fc853d7ef56838261f4bf2695e9817185773c50268d99c4123968db1cfbfb618bf978eec0c49d76e74f827f51cc5417439864aa1127c282587eb2e60e6')
 
 pkgver() {
   cd "mpd"
@@ -64,6 +68,12 @@ prepare() {
   cd "mpd"
   sed -e '/\[Service\]/a User=mpd' \
       -i "systemd/system/mpd.service.in"
+
+  grep -Fx "revision = ${_fooyin_tak_commit}" subprojects/fooyin-tak.wrap
+  install -d subprojects/fooyin-tak
+  cp -a "../fooyin-tak-${_fooyin_tak_commit}/." subprojects/fooyin-tak/
+  install -Dm644 subprojects/packagefiles/fooyin-tak/meson.build \
+    subprojects/fooyin-tak/meson.build
 }
 
 build() {
@@ -83,6 +93,7 @@ build() {
         -D documentation=enabled \
         -D adplug=disabled \
         -D sndio=disabled \
+        -D tak=enabled \
         -D tinyalsa=disabled \
         -D shine=disabled \
         -D tremor=disabled \
@@ -94,11 +105,10 @@ build() {
   ninja -C build
 }
 
-# There aren't tests
-#check() {
-#  cd "mpd"
-#  ninja -C build test
-#}
+check() {
+  cd "mpd"
+  build/mpd --version | grep -Fx ' [tak] tak'
+}
 
 package() {
   cd "mpd"
@@ -115,4 +125,8 @@ package() {
   install -vDm 644 "../mpd.tmpfiles" "${pkgdir}/usr/lib/tmpfiles.d/mpd.conf"
 
   install -vDm 644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+  install -Dm644 subprojects/fooyin-tak/LICENSE \
+    "${pkgdir}/usr/share/licenses/${pkgname}/fooyin-tak/LICENSE"
+  install -Dm644 subprojects/fooyin-tak/LICENSES/* \
+    -t "${pkgdir}/usr/share/licenses/${pkgname}/fooyin-tak/LICENSES/"
 }
