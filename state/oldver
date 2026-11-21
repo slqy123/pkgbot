@@ -13,6 +13,12 @@
       "version": "3ed4a99771a17ce2ba5c0a049882e5bea1bc20f9",
       "revision": "3ed4a99771a17ce2ba5c0a049882e5bea1bc20f9"
     },
+    "fatrace": {
+      "version": "0.19.1",
+      "gitref": "refs/tags/0.19.1",
+      "revision": "febf47e0570108dff0894661ae8c39a8db97ad25",
+      "url": "https://github.com/martinpitt/fatrace/releases/tag/0.19.1"
+    },
     "fcitx5-rime-git": {
       "version": "eb787f3d234dcb49430d8740c5a4989128d60f26",
       "revision": "eb787f3d234dcb49430d8740c5a4989128d60f26"
