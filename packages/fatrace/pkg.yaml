@@ -1,0 +1,5 @@
+strategy: github-release
+update_on:
+  - source: github
+    github: martinpitt/fatrace
+    use_max_tag: true
