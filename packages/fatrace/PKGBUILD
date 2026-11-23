@@ -10,7 +10,7 @@ depends=('python' 'powertop')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/$pkgver.tar.gz"
         'current-mount-event-fd.patch')
 sha256sums=('242d17dbb7695b1011d97bd856f0756043e6ad73470d38aa0ae69a1df7a490eb'
-            '15b14c68048066f33f9ec24bc0a1436490de9f21fe75562a4269bead67200faf')
+            'f26fddafcbf5e17681c34c031ff4bb40177bd6fa3c429a3312ff0a64eab5917e')
 
 prepare() {
     cd "$pkgname-$pkgver"

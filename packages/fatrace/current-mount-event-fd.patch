@@ -1,39 +1,79 @@
 --- a/fatrace.c
 +++ b/fatrace.c
-@@ -838,12 +838,31 @@
-     parse_args (argc, argv);
+@@ -474,7 +474,9 @@
+         return false;
+     memcpy (ev->proc.comm, procname, sizeof (procname));
  
- #ifdef FAN_REPORT_FID
--    fan_fd = fanotify_init (FAN_CLASS_NOTIF | FAN_REPORT_FID, O_LARGEFILE);
--    if (fan_fd >= 0)
--        fid_mode = 1;
-+    /* A single mount can report ordinary I/O with event fds even when
-+     * its filesystem has no usable fsid or exportable file handles. */
-+    bool use_event_fd = false;
+-    event_fd = get_fid_event_fd (data, ev->path, sizeof (ev->path));
++    event_fd = data->fd;
++    if (event_fd < 0)
++        event_fd = get_fid_event_fd (data, ev->path, sizeof (ev->path));
+     if (event_fd >= 0) {
+         struct stat st;
+ 
+@@ -489,7 +491,8 @@
+         if (!ev->path[0])
+             get_fd_path (event_fd, ev->path, sizeof (ev->path));
+ 
+-        close (event_fd);
++        if (data->fd < 0)
++            close (event_fd);
+     }
+ 
+     while (ppid > 0) {
+@@ -528,14 +531,17 @@
+ static bool
+ do_mark (int fan_fd, const char *dir)
+ {
+-    uint64_t mask = FAN_ACCESS | FAN_MODIFY | FAN_OPEN | FAN_CLOSE | FAN_ONDIR | FAN_EVENT_ON_CHILD |
+-                    FAN_CREATE | FAN_DELETE | FAN_MOVE;
++    uint64_t mask = FAN_ACCESS | FAN_MODIFY | FAN_OPEN | FAN_CLOSE | FAN_ONDIR | FAN_EVENT_ON_CHILD;
+     bool success = false;
+ 
++    if (!(mark_mode & FAN_MARK_MOUNT))
++        mask |= FAN_CREATE | FAN_DELETE | FAN_MOVE;
++
+     /* look up the path only once, so that the watch and the registration are on the same file system */
+     int fd = open (dir, O_RDONLY | O_DIRECTORY);
+     if (fd >= 0 && fanotify_mark (fan_fd, mark_mode, mask, fd, NULL) == 0) {
+-        add_fsid (fd, dir);
++        if (!(mark_mode & FAN_MARK_MOUNT))
++            add_fsid (fd, dir);
+         success = true;
+     } else {
+         warn ("Failed to add watch for %s", dir);
+@@ -860,7 +866,23 @@
+     /* Unprivileged users can initialize fanotify with file handles, but then the kernel only allows
+      * --dir watches, hides the pid of other processes, and open_by_handle_at() fails. Requesting the
+      * admin-only FAN_UNLIMITED_MARKS makes fanotify_init() fail without privileges. */
+-    fan_fd = fanotify_init (FAN_CLASS_NOTIF | FAN_REPORT_DFID_NAME_TARGET | FAN_UNLIMITED_MARKS, O_LARGEFILE);
++    unsigned int flags = FAN_CLASS_NOTIF | FAN_UNLIMITED_MARKS | FAN_REPORT_DFID_NAME_TARGET;
 +    if (option_current_mount) {
-+        use_event_fd = !(option_filter_mask & (FAN_CREATE | FAN_DELETE | FAN_MOVE));
++        bool use_event_fd = !(option_filter_mask & (FAN_CREATE | FAN_DELETE | FAN_MOVE));
 +        if (option_filter_mask == 0xffffffff) {
 +            struct statfs st;
 +            const fsid_t zero_fsid = {0};
-+            if (statfs (".", &st) == 0 &&
-+                memcmp (&st.f_fsid, &zero_fsid, sizeof zero_fsid) == 0) {
++            if (statfs (".", &st) == 0 && memcmp (&st.f_fsid, &zero_fsid, sizeof zero_fsid) == 0) {
 +                warnx ("This mount has no fsid; reporting open, read, write and close events only");
 +                use_event_fd = true;
 +            }
 +        }
++        if (use_event_fd) {
++            flags &= ~FAN_REPORT_DFID_NAME_TARGET;
++            mark_mode = FAN_MARK_ADD | FAN_MARK_MOUNT;
++        }
 +    }
-+    if (use_event_fd) {
-+        mark_mode = FAN_MARK_ADD | FAN_MARK_MOUNT;
-+    } else {
-+        fan_fd = fanotify_init (FAN_CLASS_NOTIF | FAN_REPORT_FID, O_LARGEFILE);
-+        if (fan_fd >= 0)
-+            fid_mode = 1;
- 
--    if (fan_fd < 0 && errno == EINVAL)
--        debug ("FAN_REPORT_FID not available");
-+        if (fan_fd < 0 && errno == EINVAL)
-+            debug ("FAN_REPORT_FID not available");
-+    }
- #endif
-     if (fan_fd < 0)
-         fan_fd = fanotify_init (0, O_LARGEFILE);
++    fan_fd = fanotify_init (flags, O_LARGEFILE);
+     if (fan_fd < 0) {
+         if (errno == EINVAL)
+             errx (EXIT_FAILURE,
+@@ -959,6 +981,9 @@
+                 warnx ("Event queue overflowed, some events were lost");
+             else if (process_event (data, &event_time, &event))
+                 format_event (stdout, &event, option_timestamp);
++            /* The kernel supplies an fd even for events ignored by our filters. */
++            if (data->fd >= 0)
++                close (data->fd);
+             data = FAN_EVENT_NEXT (data, res);
+         }
+     }
