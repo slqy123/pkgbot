@@ -1,7 +1,7 @@
 # Based on the AUR fatrace package by Markus Weimar and Frank Phillips.
 pkgname=fatrace
-pkgver=0.19.1
-pkgrel=4
+pkgver=0.20.0
+pkgrel=1
 pkgdesc='Reports file access events from running processes.'
 arch=('x86_64' 'aarch64' 'armv6l')
 url='https://github.com/martinpitt/fatrace'
@@ -9,7 +9,7 @@ license=('GPL-3.0-or-later')
 depends=('python' 'powertop')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/$pkgver.tar.gz"
         'current-mount-event-fd.patch')
-sha256sums=('fd8f143f4e162d36c8ae29c51b32d315415447829c81091e3bb86b326051c77c'
+sha256sums=('242d17dbb7695b1011d97bd856f0756043e6ad73470d38aa0ae69a1df7a490eb'
             '15b14c68048066f33f9ec24bc0a1436490de9f21fe75562a4269bead67200faf')
 
 prepare() {
