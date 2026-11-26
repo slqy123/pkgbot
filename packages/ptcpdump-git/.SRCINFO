@@ -13,8 +13,6 @@ pkgbase = ptcpdump-git
 	provides = ptcpdump
 	conflicts = ptcpdump
 	source = ptcpdump::git+https://github.com/mozillazg/ptcpdump.git
-	source = fix-extended-btf-header.patch
 	sha256sums = SKIP
-	sha256sums = 55777a14ed2afa43999a7a58033c8c33ab5ddd7768483e25e73fb7c62f1e4935
 
 pkgname = ptcpdump-git
