@@ -72,8 +72,13 @@ prepare() {
   grep -Fx "revision = ${_fooyin_tak_commit}" subprojects/fooyin-tak.wrap
   install -d subprojects/fooyin-tak
   cp -a "../fooyin-tak-${_fooyin_tak_commit}/." subprojects/fooyin-tak/
-  install -Dm644 subprojects/packagefiles/fooyin-tak/meson.build \
-    subprojects/fooyin-tak/meson.build
+  # Pre-extracted subprojects bypass Meson's wrap overlays and diff_files.
+  meson subprojects packagefiles --apply fooyin-tak
+  local diff_files diff
+  diff_files=$(sed -n 's/^diff_files[[:space:]]*=[[:space:]]*//p' subprojects/fooyin-tak.wrap)
+  for diff in ${diff_files//,/ }; do
+    patch --batch --forward --fuzz=0 -d subprojects/fooyin-tak -p1 < "subprojects/packagefiles/$diff"
+  done
 }
 
 build() {
@@ -108,6 +113,10 @@ build() {
 check() {
   cd "mpd"
   build/mpd --version | grep -Fx ' [tak] tak'
+  cd subprojects/fooyin-tak
+  local test_name=distant_seek_without_table_bounds_reads_and_preserves_pcm
+  cargo test --locked --offline --test features -- --list | grep -Fx "$test_name: test"
+  cargo test --locked --offline --test features "$test_name" -- --exact
 }
 
 package() {
